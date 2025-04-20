@@ -1,0 +1,272 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+<title>MEP Design Automation - Project Details</title>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2><i class="fas fa-project-diagram me-2"></i>{{ project.name }}</h2>
+            <div>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Projects
+                </a>
+            </div>
+        </div>
+        
+        <!-- Project Details Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Project Information</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Project ID:</strong> {{ project.id }}</p>
+                        <p><strong>Creation Date:</strong> {{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>Last Updated:</strong> {{ project.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Description:</strong></p>
+                        <p>{{ project.description or 'No description provided' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Files and Resources -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Project Files</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-file-blueprint me-2"></i>Blueprint</h5>
+                        {% if project.blueprint_file %}
+                            <div class="alert alert-success">
+                                <p>
+                                    <strong>Uploaded:</strong> {{ project.blueprint_file.split('/')[-1] }}
+                                </p>
+                                <a href="{{ url_for('download_file', filename=project.blueprint_file) }}" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <p>No blueprint uploaded yet.</p>
+                                <a href="{{ url_for('upload_files', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-upload me-1"></i> Upload Blueprint
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-clipboard-list me-2"></i>Building Code</h5>
+                        {% if project.building_code_file %}
+                            <div class="alert alert-success">
+                                <p>
+                                    <strong>Uploaded:</strong> {{ project.building_code_file.split('/')[-1] }}
+                                </p>
+                                <a href="{{ url_for('download_file', filename=project.building_code_file) }}" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <p>No building code document uploaded yet.</p>
+                                <a href="{{ url_for('upload_files', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-upload me-1"></i> Upload Building Code
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Requirements -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">MEP Requirements</h4>
+            </div>
+            <div class="card-body">
+                {% if project.requirements %}
+                    <div class="row">
+                        <!-- Mechanical Requirements -->
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header bg-transparent">
+                                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Mechanical</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        {% if project.requirements.get('mechanical') %}
+                                            {% for key, value in project.requirements.get('mechanical').items() %}
+                                                <li class="list-group-item">
+                                                    <strong>{{ key|replace('_', ' ')|title }}:</strong> {{ value }}
+                                                </li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li class="list-group-item text-muted">No mechanical requirements specified</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Electrical Requirements -->
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header bg-transparent">
+                                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Electrical</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        {% if project.requirements.get('electrical') %}
+                                            {% for key, value in project.requirements.get('electrical').items() %}
+                                                <li class="list-group-item">
+                                                    <strong>{{ key|replace('_', ' ')|title }}:</strong> {{ value }}
+                                                </li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li class="list-group-item text-muted">No electrical requirements specified</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Plumbing Requirements -->
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header bg-transparent">
+                                    <h5 class="mb-0"><i class="fas fa-faucet me-2"></i>Plumbing</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        {% if project.requirements.get('plumbing') %}
+                                            {% for key, value in project.requirements.get('plumbing').items() %}
+                                                <li class="list-group-item">
+                                                    <strong>{{ key|replace('_', ' ')|title }}:</strong> {{ value }}
+                                                </li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li class="list-group-item text-muted">No plumbing requirements specified</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <p>No specific MEP requirements have been set for this project.</p>
+                        <a href="{{ url_for('upload_files', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i> Set Requirements
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Extracted Spatial Data -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Extracted Spatial Data</h4>
+            </div>
+            <div class="card-body">
+                {% set spatial_data = namespace(exists=false) %}
+                {% for data in project.spatial_data %}
+                    {% set spatial_data.exists = true %}
+                {% endfor %}
+                
+                {% if spatial_data.exists %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Elements</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in project.spatial_data %}
+                                <tr>
+                                    <td>{{ data.data_type }}</td>
+                                    <td>{{ data.data|length if data.data is iterable else 'N/A' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#spatialModal{{ data.id }}">
+                                            <i class="fas fa-eye me-1"></i> View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Spatial Data Modals -->
+                    {% for data in project.spatial_data %}
+                    <div class="modal fade" id="spatialModal{{ data.id }}" tabindex="-1" aria-labelledby="spatialModalLabel{{ data.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="spatialModalLabel{{ data.id }}">{{ data.data_type|title }} Data</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <pre class="bg-dark text-light p-3"><code>{{ data.data|tojson(indent=2) }}</code></pre>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <p>No spatial data has been extracted yet. This will happen after blueprint processing.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0">Actions</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('upload_files', project_id=project.id) }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-upload me-2"></i> Upload Files
+                        </a>
+                    </div>
+                    {% if project.blueprint_file %}
+                    <div class="col-md-4 mb-3">
+                        <form action="{{ url_for('generate_design', project_id=project.id) }}" method="POST">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-cogs me-2"></i> Generate MEP Design
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% if project.design_data %}
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('view_design', project_id=project.id) }}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-drafting-compass me-2"></i> View Design
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

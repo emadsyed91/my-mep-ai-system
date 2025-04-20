@@ -1,0 +1,125 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+<title>MEP Design Automation - Home</title>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title">MEP Design Automation System</h2>
+                <p class="card-text">
+                    Generate compliant Mechanical, Electrical, and Plumbing designs from architectural blueprints.
+                    Our AI-powered system automates the process while ensuring compliance with building codes.
+                </p>
+                <a href="{{ url_for('new_project') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i> Create New Project
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Recent Projects</h3>
+            </div>
+            <div class="card-body">
+                {% if projects %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                            <tr>
+                                <td>{{ project.name }}</td>
+                                <td>
+                                    {% if project.description %}
+                                        {{ project.description[:50] }}{% if project.description|length > 50 %}...{% endif %}
+                                    {% else %}
+                                        <span class="text-muted">No description</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ project.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if project.design_data %}
+                                        <span class="badge bg-success">Design Generated</span>
+                                    {% elif project.blueprint_file %}
+                                        <span class="badge bg-info">Blueprint Uploaded</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">New</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if project.design_data %}
+                                        <a href="{{ url_for('view_design', project_id=project.id) }}" class="btn btn-outline-success">
+                                            <i class="fas fa-drafting-compass"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-folder-open fa-3x mb-3 text-muted"></i>
+                    <p class="text-muted">No projects found. Create a new project to get started.</p>
+                    <a href="{{ url_for('new_project') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i> Create New Project
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-cogs fa-3x mb-3 text-primary"></i>
+                <h4>Mechanical</h4>
+                <p class="card-text">HVAC systems, ductwork, and ventilation designs optimized for your space.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-bolt fa-3x mb-3 text-warning"></i>
+                <h4>Electrical</h4>
+                <p class="card-text">Electrical layouts, lighting designs, and power distribution systems.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-faucet fa-3x mb-3 text-info"></i>
+                <h4>Plumbing</h4>
+                <p class="card-text">Water supply, drainage systems, and fixture layouts to code.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

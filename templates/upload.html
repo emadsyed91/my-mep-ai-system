@@ -1,0 +1,228 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+<title>MEP Design Automation - New Project</title>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    {% if project %}
+                    <i class="fas fa-upload me-2"></i>Upload Files for {{ project.name }}
+                    {% else %}
+                    <i class="fas fa-plus-circle me-2"></i>Create New Project
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if not project %}
+                <!-- Project Information Form -->
+                <form method="POST" action="{{ url_for('new_project') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </form>
+                {% else %}
+                <!-- File Upload Form -->
+                <form method="POST" action="{{ url_for('upload_files', project_id=project.id) }}" enctype="multipart/form-data">
+                    <div class="accordion" id="uploadAccordion">
+                        <!-- Blueprint Upload Section -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="blueprintHeader">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#blueprintCollapse" aria-expanded="true" aria-controls="blueprintCollapse">
+                                    <i class="fas fa-file-blueprint me-2"></i>
+                                    Blueprint Upload
+                                </button>
+                            </h2>
+                            <div id="blueprintCollapse" class="accordion-collapse collapse show" aria-labelledby="blueprintHeader">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <label for="blueprint" class="form-label">Upload Architectural Blueprint</label>
+                                        <input class="form-control" type="file" id="blueprint" name="blueprint" accept=".dwg,.dxf,.rvt,.ifc">
+                                        <div class="form-text">Accepted formats: DWG, DXF, RVT, IFC</div>
+                                    </div>
+                                    
+                                    {% if project.blueprint_file %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        Blueprint already uploaded: {{ project.blueprint_file.split('/')[-1] }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Building Code Upload Section -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="codeHeader">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                                    <i class="fas fa-clipboard-list me-2"></i>
+                                    Building Code Upload
+                                </button>
+                            </h2>
+                            <div id="codeCollapse" class="accordion-collapse collapse" aria-labelledby="codeHeader">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <label for="building_code" class="form-label">Upload Building Code Document</label>
+                                        <input class="form-control" type="file" id="building_code" name="building_code" accept=".pdf,.docx,.txt">
+                                        <div class="form-text">Accepted formats: PDF, DOCX, TXT</div>
+                                    </div>
+                                    
+                                    {% if project.building_code_file %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        Building code already uploaded: {{ project.building_code_file.split('/')[-1] }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Requirements Input Section -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="requirementsHeader">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#requirementsCollapse" aria-expanded="false" aria-controls="requirementsCollapse">
+                                    <i class="fas fa-tasks me-2"></i>
+                                    MEP Requirements
+                                </button>
+                            </h2>
+                            <div id="requirementsCollapse" class="accordion-collapse collapse" aria-labelledby="requirementsHeader">
+                                <div class="accordion-body">
+                                    <!-- Mechanical Requirements -->
+                                    <h5 class="mb-3">Mechanical (HVAC) Requirements</h5>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="hvac_type" class="form-label">HVAC System Type</label>
+                                            <select class="form-select" id="hvac_type" name="hvac_type">
+                                                <option value="forced_air">Forced Air</option>
+                                                <option value="vrf">Variable Refrigerant Flow (VRF)</option>
+                                                <option value="chilled_water">Chilled Water</option>
+                                                <option value="split_system">Split System</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="cooling_load" class="form-label">Cooling Load (BTU/h per sq ft)</label>
+                                            <input type="number" class="form-control" id="cooling_load" name="cooling_load" value="400">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Electrical Requirements -->
+                                    <h5 class="mb-3">Electrical Requirements</h5>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="voltage" class="form-label">Supply Voltage</label>
+                                            <select class="form-select" id="voltage" name="voltage">
+                                                <option value="120">120V</option>
+                                                <option value="240">240V</option>
+                                                <option value="208">208V (3-phase)</option>
+                                                <option value="480">480V (3-phase)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="lighting_density" class="form-label">Lighting Density (W per sq ft)</label>
+                                            <input type="number" class="form-control" id="lighting_density" name="lighting_density" value="1.5" step="0.1">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Plumbing Requirements -->
+                                    <h5 class="mb-3">Plumbing Requirements</h5>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="water_pressure" class="form-label">Minimum Water Pressure (psi)</label>
+                                            <input type="number" class="form-control" id="water_pressure" name="water_pressure" value="40">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="fixture_units" class="form-label">Total Fixture Units</label>
+                                            <input type="number" class="form-control" id="fixture_units" name="fixture_units" value="20">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hidden JSON field for all requirements -->
+                                    <input type="hidden" id="requirements" name="requirements" value="{}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i> Upload Files
+                        </button>
+                        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Project
+                        </a>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to collect all form data and put it in the hidden requirements field
+    function updateRequirements() {
+        let requirements = {
+            mechanical: {
+                hvac_type: document.getElementById('hvac_type').value,
+                cooling_load: parseFloat(document.getElementById('cooling_load').value)
+            },
+            electrical: {
+                voltage: parseInt(document.getElementById('voltage').value),
+                lighting_density: parseFloat(document.getElementById('lighting_density').value)
+            },
+            plumbing: {
+                water_pressure: parseFloat(document.getElementById('water_pressure').value),
+                fixture_units: parseInt(document.getElementById('fixture_units').value)
+            }
+        };
+        
+        document.getElementById('requirements').value = JSON.stringify(requirements);
+    }
+    
+    // Attach event listeners to all form fields
+    const formFields = document.querySelectorAll('#hvac_type, #cooling_load, #voltage, #lighting_density, #water_pressure, #fixture_units');
+    formFields.forEach(field => {
+        field.addEventListener('change', updateRequirements);
+    });
+    
+    // Initialize the requirements field
+    updateRequirements();
+    
+    // File upload validation
+    document.getElementById('blueprint')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (!['dwg', 'dxf', 'rvt', 'ifc'].includes(extension)) {
+                alert('Please select a valid blueprint file (DWG, DXF, RVT, IFC)');
+                e.target.value = '';
+            }
+        }
+    });
+    
+    document.getElementById('building_code')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (!['pdf', 'docx', 'txt'].includes(extension)) {
+                alert('Please select a valid building code file (PDF, DOCX, TXT)');
+                e.target.value = '';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
